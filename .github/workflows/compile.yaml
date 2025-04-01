@@ -1,0 +1,22 @@
+on:
+  pull_request:
+    branches: [ 'main' ]
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  compile:
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+      - name: Compile
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run : go run .
+
