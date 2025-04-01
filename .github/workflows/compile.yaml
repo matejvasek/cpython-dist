@@ -1,0 +1,18 @@
+on:
+  pull_request:
+    branches: [ 'main' ]
+  schedule:
+    - cron: '*/10 * * * *'
+jobs:
+  compile:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+      - name: Compile
+        run : go run .
+
