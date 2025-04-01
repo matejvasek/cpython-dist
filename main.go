@@ -46,6 +46,27 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("cannot get buildpack source: %w", err)
 	}
 
+	versions, err := getVersions(src)
+	if err != nil {
+		return fmt.Errorf("cannot get versions: %w", err)
+	}
+
+	compiledVersions, err := getCompiledVersions(ctx)
+	if err != nil {
+		return fmt.Errorf("cannot get compiled versions: %w", err)
+	}
+
+	versionsToCompile := make([]string, 0, len(versions))
+	for v, _ := range versions {
+		if _, ok := compiledVersions[v]; !ok {
+			versionsToCompile = append(versionsToCompile, v)
+		}
+	}
+	if len(versionsToCompile) == 0 {
+		fmt.Println("all required versions are already built")
+		return nil
+	}
+
 	builderImage := "compilation"
 	cmd := exec.CommandContext(ctx, "docker",
 		"build",
@@ -61,22 +82,12 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("cannot build builder image: %w", err)
 	}
 
-	versions, err := getVersions(src)
-	if err != nil {
-		return fmt.Errorf("cannot get versions: %w", err)
-	}
-
-	compiledVersions, err := getCompiledVersions(ctx)
-	if err != nil {
-		return fmt.Errorf("cannot get compiled versions: %w", err)
-	}
-
 	out, err := os.MkdirTemp("", "")
 	if err != nil {
 		return fmt.Errorf("cannot create temp for artifacts: %w", err)
 	}
 
-	for v := range versions {
+	for _, v := range versionsToCompile {
 		if _, ok := compiledVersions[v]; ok {
 			continue
 		}
