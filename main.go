@@ -78,6 +78,7 @@ func run(ctx context.Context) error {
 
 	for v := range versions {
 		if _, ok := compiledVersions[v]; ok {
+			fmt.Println("already present:", v)
 			continue
 		}
 		cmd = exec.CommandContext(ctx, "docker",
@@ -100,6 +101,7 @@ func run(ctx context.Context) error {
 			return err
 		}
 		if strings.HasSuffix(p, ".tgz") {
+			fmt.Println("will upload:", p)
 			err = uploadTGZ(ctx, p)
 		}
 		return err
@@ -124,7 +126,7 @@ func downloadBuildpackSource(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("cannot create temp dir for source code: %w", err)
 	}
 	cmd := exec.CommandContext(ctx, "tar",
-		"xzf", "-",
+		"xzvf", "-",
 		"-C", d,
 		"--strip-components=1")
 	cmd.Stdin = resp.Body
