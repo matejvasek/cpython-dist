@@ -14,5 +14,7 @@ jobs:
         with:
           go-version: 'stable'
       - name: Compile
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run : go run .
 
