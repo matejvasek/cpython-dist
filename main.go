@@ -110,8 +110,8 @@ func run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		if strings.HasSuffix(p, ".tgz") {
-			err = uploadTGZ(ctx, p)
+		if strings.HasSuffix(p, ".tgz") || strings.HasSuffix(p, ".tgz.checksum") {
+			err = uploadAsset(ctx, p)
 		}
 		return err
 	})
@@ -201,7 +201,31 @@ func getCompiledVersions(ctx context.Context) (map[string]struct{}, error) {
 	return versions, nil
 }
 
-func uploadTGZ(ctx context.Context, p string) error {
+func uploadAsset(ctx context.Context, p string) error {
+
+	name := filepath.Base(p)
+	name = strings.ReplaceAll(name, "_x64_", "_arm64_")
+
+	r := regexp.MustCompile(`_[a-fA-F0-9]{8}.`)
+
+	name = r.ReplaceAllString(name, ".")
+	var mediaType string
+	switch {
+	case strings.HasSuffix(name, ".tgz"):
+		mediaType = "application/gzip"
+	case strings.HasSuffix(name, ".sha256"):
+	case strings.HasSuffix(name, ".checksum"):
+		mediaType = "text/plain"
+	default:
+		mediaType = "application/octet-stream"
+	}
+
+	var uploadOptions = &github.UploadOptions{
+		Name:      name,
+		MediaType: mediaType,
+	}
+	fmt.Printf("UPLOAD: %+v\n", uploadOptions)
+
 	cli := newGHClient(ctx)
 
 	owner := "matejvasek"
@@ -218,18 +242,6 @@ func uploadTGZ(ctx context.Context, p string) error {
 	f, err := os.Open(p)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %w", err)
-	}
-
-	name := filepath.Base(f.Name())
-	name = strings.ReplaceAll(name, "_x64_", "_arm64_")
-
-	r := regexp.MustCompile(`_[a-zA-Z0-9]{8}.tgz`)
-
-	name = r.ReplaceAllString(name, ".tgz")
-
-	var uploadOptions = &github.UploadOptions{
-		Name:      name,
-		MediaType: "application/tgz",
 	}
 
 	_, resp, err = cli.Repositories.UploadReleaseAsset(ctx, owner, repo, rel.GetID(), uploadOptions, f)
