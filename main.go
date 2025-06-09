@@ -122,7 +122,7 @@ func run(ctx context.Context) error {
 }
 
 func downloadBuildpackSource(ctx context.Context) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", "https://github.com/paketo-buildpacks/cpython/archive/refs/heads/main.tar.gz", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", "https://github.com/paketo-buildpacks/cpython/archive/refs/tags/v1.14.10.tar.gz", nil)
 	if err != nil {
 		return "", fmt.Errorf("cannot create http request: %w", err)
 	}
