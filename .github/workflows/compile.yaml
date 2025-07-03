@@ -18,14 +18,13 @@ jobs:
           sudo sysctl -w net.ipv6.conf.all.forwarding=1
           MY_IP="$(hostname -I | awk '{print $1}')"
           sudo jool instance add "default" --pool6 64:ff9b::/96
-          sudo jool pool4 add --tcp $MY_IP 1-65535
-          sudo jool pool4 add --udp $MY_IP 1-65535
-          sudo jool pool4 add --icmp $MY_IP 1-65535
+          #sudo jool pool4 add --tcp $MY_IP 1-65535
+          #sudo jool pool4 add --udp $MY_IP 1-65535
+          #sudo jool pool4 add --icmp $MY_IP 1-65535
           ip a
           ip route
           ip -6 route
-          ping -c 3 64:ff9b::8c52:7903
-          exit 0
+          ping -c 3 64:ff9b::8c52:7903 || true
           
           sudo apt install -y dnsutils iproute2 bind9
           sudo ip addr add fd00::1 dev eth0
@@ -69,6 +68,7 @@ jobs:
           systemctl status bind9
           echo 'DNS=127.0.0.1' | sudo tee -a /etc/systemd/resolved.conf
           cat /etc/systemd/resolved.conf
+          sudo resolvectl dns eth0 127.0.0.1
           sudo systemctl restart systemd-resolved.service
           systemctl status systemd-resolved.service
           resolvectl || true
