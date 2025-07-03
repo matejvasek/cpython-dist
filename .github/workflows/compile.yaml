@@ -50,10 +50,13 @@ jobs:
               dnssec-validation auto;
           };
           EOF
+          
           sudo systemctl restart bind9
           systemctl status bind9
-          echo '\nDNS=127.0.0.1\n' >> /etc/systemd/resolved.conf
-          cat /etc/systemd/resolved.conf
+          echo '\nDNS=127.0.0.1\n' | sudo tee /etc/systemd/resolved.conf
+          sudo systemctl restart systemd-resolved.service
+          resolvectl || true
+          
           dig aaaa ghcr.io || true
           dig aaaa gcr.io || true
           
