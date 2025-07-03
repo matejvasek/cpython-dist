@@ -12,6 +12,7 @@ jobs:
       - name: Compile
         run: |
           set -x
+          nmcli connection show --active
           sudo apt update && sudo apt install -y dnsutils iproute2 jool-dkms jool-tools bind9
           sudo ip addr add fd00::1 dev eth0
           ip a
@@ -55,8 +56,7 @@ jobs:
           EOF
           sudo systemctl restart bind9
           systemctl status bind9
+          
           dig aaaa ghcr.io || true
           dig aaaa gcr.io || true
-          dig aaaa ghcr.io @127.0.0.1 || true
-          dig aaaa gcr.io @127.0.0.1 || true
           ping -c 3 64:ff9b::8c52:7903
