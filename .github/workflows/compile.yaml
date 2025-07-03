@@ -11,9 +11,50 @@ jobs:
     steps:
       - name: Compile
         run: |
-          sudo apt update && sudo apt install -y dnsutils iproute2
+          set -x
+          sudo apt update && sudo apt install -y dnsutils iproute2 jool-dkms jool-tools
+          sudo ip addr add fd00::1 dev eth0
           ip a
+          sudo modprobe jool
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
+          sudo jool instance add "default" --pool6 64:ff9b::/96
+          sudo jool pool add "default" --ipv4_range "$(hostname -I | awk '{print $1}')"
+          cat <<EOF | cat
+          acl "excluded-aaaa" {
+              // 2001:db8:bad::1; // The specific IPv6 address to ignore
+              2000::/3; // You could also exclude an entire prefix
+          };
+          
+          options {
+              directory "/var/cache/bind";
+          
+              // --- DNS64 Configuration ---
+              dns64 64:ff9b::/96 {
+                  clients { any; };      // Apply DNS64 to all clients
+                  mapped { !excluded-aaaa; any; }; // Synthesize if the AAAA is NOT in the excluded list
+                  exclude { excluded-aaaa; };      // Define the exclusion list
+              };
+              // -------------------------
+          
+              // Standard forwarder, required for recursion
+              forwarders {
+                  8.8.8.8;
+                  8.8.4.4;
+              };
+          
+              // Enable recursion
+              recursion yes;
+              allow-recursion { localnets; localhost; };
+          
+              // Boilerplate options
+              listen-on-v6 { any; };
+              listen-on { any; };
+              allow-query { any; };
+              dnssec-validation auto;
+          };
+          EOF
+          sudo systemctl restart bind9
           dig aaaa ghcr.io
           dig aaaa github.com
           dig aaaa api.github.com
-
+          ping -c 3 64:ff9b::8c52:7903
