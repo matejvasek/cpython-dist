@@ -23,7 +23,9 @@ jobs:
           sudo jool pool4 add --udp $MY_IP 1-65535
           sudo jool pool4 add --icmp $MY_IP 1-65535
           sudo ip addr add fd00::1 dev eth0
+          ping -c 3 64:ff9b::8c52:7903 || true
           sudo ip -6 route add default dev eth0
+          ping -c 3 64:ff9b::8c52:7903 || true
           ip a
           ip route
           ip -6 route
