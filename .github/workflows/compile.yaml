@@ -53,8 +53,10 @@ jobs:
           
           sudo systemctl restart bind9
           systemctl status bind9
-          echo '\nDNS=127.0.0.1\n' | sudo tee /etc/systemd/resolved.conf
+          echo '\nDNS=127.0.0.1\n' | sudo tee -a /etc/systemd/resolved.conf
+          cat /etc/systemd/resolved.conf
           sudo systemctl restart systemd-resolved.service
+          systemctl status systemd-resolved.service
           resolvectl || true
           
           dig aaaa ghcr.io || true
