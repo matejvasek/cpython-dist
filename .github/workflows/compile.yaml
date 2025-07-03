@@ -13,7 +13,17 @@ jobs:
         run: |
           set -x
           cat /etc/systemd/resolved.conf
-          sudo apt update && sudo apt install -y dnsutils iproute2 bind9
+          sudo apt update
+          
+                    
+          sudo apt install -y jool-dkms jool-tools
+          sudo modprobe jool
+          sudo sysctl -w net.ipv6.conf.all.forwarding=1
+          sudo jool instance add "default" --pool6 64:ff9b::/96
+          ping -c 3 64:ff9b::8c52:7903
+          exit 0
+          
+          sudo apt install -y dnsutils iproute2 bind9
           sudo ip addr add fd00::1 dev eth0
           ip a
           cat <<EOF | sudo tee /etc/bind/named.conf.options
@@ -61,9 +71,3 @@ jobs:
           
           dig aaaa ghcr.io || true
           dig aaaa gcr.io || true
-          
-          sudo apt install -y jool-dkms jool-tools
-          sudo modprobe jool
-          sudo sysctl -w net.ipv6.conf.all.forwarding=1
-          sudo jool instance add "default" --pool6 64:ff9b::/96
-          ping -c 3 64:ff9b::8c52:7903
