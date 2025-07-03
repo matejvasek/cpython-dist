@@ -54,6 +54,9 @@ jobs:
           };
           EOF
           sudo systemctl restart bind9
-          dig aaaa ghcr.io
-          dig aaaa gcr.io
+          systemctl status bind9
+          dig aaaa ghcr.io || true
+          dig aaaa gcr.io || true
+          dig aaaa ghcr.io @127.0.0.1 || true
+          dig aaaa gcr.io @127.0.0.1 || true
           ping -c 3 64:ff9b::8c52:7903
