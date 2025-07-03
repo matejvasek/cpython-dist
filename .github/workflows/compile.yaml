@@ -22,7 +22,7 @@ jobs:
           sudo jool pool4 add --udp $MY_IP 1-65535
           sudo jool pool4 add --icmp $MY_IP 1-65535
           sudo ip addr add fd00::1 dev eth0
-          sudo ip route add default '::/0' dev eth0
+          sudo ip -6 route add default '::/0' dev eth0
           ip a
           ip route
           ip -6 route
