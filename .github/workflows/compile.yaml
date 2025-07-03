@@ -12,8 +12,8 @@ jobs:
       - name: Compile
         run: |
           set -x
+          sudo apt update && sudo apt install -y dnsutils iproute2 jool-dkms jool-tools bind9 NetworkManager
           nmcli connection show --active
-          sudo apt update && sudo apt install -y dnsutils iproute2 jool-dkms jool-tools bind9
           sudo ip addr add fd00::1 dev eth0
           ip a
           sudo modprobe jool
